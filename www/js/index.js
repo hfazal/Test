@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,38 +17,84 @@
  * under the License.
  */
 
-var ADFS = "https://intra.sse.gov.on.ca/sites/cac-emeetings";
+var SECURED_PAGE = 'https://intra.sse.gov.on.ca/sites/cac-emeetings';
 
 var app = {
     // Application Constructor
-    initialize: function() {
-        this.bindEvents();
-    },
-    // Bind Event Listeners
-    //
-    // Bind any events that are required on startup. Common events are:
-    // 'load', 'deviceready', 'offline', and 'online'.
-    bindEvents: function() {
+    initialize: function () {
+
+        var securedHost = document.querySelector('.secured-link input');
+        securedHost.value = SECURED_PAGE;
+        securedHost.addEventListener('change', function (e) {
+            SECURED_PAGE = e.target.value;
+        }, false);
+
         document.addEventListener('deviceready', this.onDeviceReady, false);
     },
     // deviceready Event Handler
-    //
-    // The scope of 'this' is the event. In order to call the 'receivedEvent'
-    // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
-        app.receivedEvent('deviceready');
-        var ref = cordova.InAppBrowser.open(ADFS, '_blank', 'location=yes');
+        document.getElementById('navigate').addEventListener('click', function () {
+            app.log('Navigating to ' + SECURED_PAGE);
+            window.location = SECURED_PAGE;
+        });
+
+        document.getElementById('xhr').addEventListener('click', function () {
+            app.log('Making XHR to ' + SECURED_PAGE);
+            app.makeXHR(SECURED_PAGE);
+        });
+
+        document.getElementById('clear').addEventListener('click', function () {
+            document.querySelector('.log #log').textContent = '';
+        });
+
+        document.getElementById('authenticate').addEventListener('click', function () {
+            app.log('Authenticating uri: ' + SECURED_PAGE);
+            app.authenticate(SECURED_PAGE);
+        })
     },
-    // Update DOM on a Received Event
-    receivedEvent: function(id) {
-        var parentElement = document.getElementById(id);
-        var listeningElement = parentElement.querySelector('.listening');
-        var receivedElement = parentElement.querySelector('.received');
+    makeXHR: function (host) {
+        var req = new XMLHttpRequest();
+        req.open('GET', host);
+        req.onload = function (e) {
+            var message = 'Got onload.\nreadyState: ' + e.target.readyState + ', HTTP status: ' + e.target.status;
+            app.log(message);
 
-        listeningElement.setAttribute('style', 'display:none;');
-        receivedElement.setAttribute('style', 'display:block;');
+            if (e.target.readyState == 4 && e.target.status == 200) {// success
+                app.log(e.target.responseText);
+            }
+        };
+        req.onerror = function (e) {
+            var message = 'Got onerror.\nreadyState: ' + e.target.readyState + ', HTTP status: ' + e.target.status;
+            app.log(message);
+        };
+        req.onreadystatechange = function (e) {
+            var message = 'Got onreadystatechange.\nreadyState: ' + e.target.readyState + ', HTTP status: ' + e.target.status;
+            app.log(message);
+        };
+        req.send();
+    },
+    authenticate: function(host) {
+        if (cordova.platformId != 'ios') {
+            app.log('authDialog.authenticate is ios-specific and does not available on this platform');
+            return;
+        }
+        authDialog.authenticate(host, function () {
+            app.log('Successfully done!');
+        }, function (err) {
+            app.log('Error occured: ' + err);
+        });
+    },
+    log: function () {
 
-        console.log('Received Event: ' + id);
+        console.log(arguments);
+
+        var args = Array.prototype.slice.call(arguments);
+        var data = args.map(function (arg) {
+            return arg.toString();
+        }).join(' ');
+
+        var log = document.querySelector('.log #log');
+        log.textContent += (data + '\n\n');
     }
 };
 
