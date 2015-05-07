@@ -17,7 +17,7 @@
  * under the License.
  */
 
-var ADFS = "https://adfs.example.com/adfs/ls/auth/integrated";
+var ADFS = "https://intra.sse.gov.on.ca/sites/cac-emeetings";
 
 var app = {
     // Application Constructor
