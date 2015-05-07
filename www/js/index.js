@@ -17,7 +17,7 @@
  * under the License.
  */
 
-var SECURED_PAGE = 'https://intra.sse.gov.on.ca/sites/cac-emeetings';
+var SECURED_PAGE = 'https://sps2013.akvelon.net:8443';
 
 var app = {
     // Application Constructor
